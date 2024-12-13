@@ -12,6 +12,7 @@ This Terraform configuration creates multiple VPCs, each containing one EC2 inst
 ## Configuration Files
 1. **Main Terraform File (main.tf):** Contains all resources and configurations.
 2. **Secrets File (secrets.tfvars):** AWS Access Key and Secret Access Key.
+3. **Variable File (variable.tf):** Start Up script, Public Key File, Number of City to deploy
 
 ## Deployment
 1. **Initialize Terraform:**
