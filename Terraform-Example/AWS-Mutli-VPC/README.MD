@@ -1,4 +1,6 @@
 # Overview
+
+![Diagram](Multi_VPC_Diagram.drawio.png)
 This Terraform configuration creates multiple VPCs, each containing one EC2 instance with a public IP. The setup includes:
 
 - VPCs: One for each city specified in var.city_names.
