@@ -1,6 +1,7 @@
 # Overview
 
 ![Diagram](Diagrams/Single-Instance.png)
+
 This Terraform configuration creates 1 EC2 Instance in the Default VPC and Subnet
 
 ## Configuration Files
