@@ -88,18 +88,19 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_key_pair" "keypair" {
-  key_name     = "RhysKey2024"
+  key_name     = "terraform-public-key"
   public_key   = file(var.public_key_file)
 }
 
 resource "aws_instance" "instance" {
   depends_on = [aws_security_group.sg]
   count               = var.num_of_cities
-  ami                 = "ami-0049815cd593da697" # Example AMI
+  ami                 = "ami-0ba992fa05aaa4a76" # Amazon Linux AMI CA-WEST-1
   instance_type       = "t3.nano"
   subnet_id           = aws_subnet.subnet[count.index].id
   vpc_security_group_ids = [aws_security_group.sg[count.index].id] # Correct argument
-  # private_ip          = "10.${count.index + 1}.0.3"
+  private_ip          = "10.${count.index + 1}.0.10"
+  associate_public_ip_address = true
   key_name            = aws_key_pair.keypair.key_name
   user_data           = var.startup_script
 
@@ -108,3 +109,10 @@ resource "aws_instance" "instance" {
   }
 }
 
+output "instance_names_and_ips" {
+  description = "Names and public IPs of the EC2 instances"
+  value = join("\n", [
+    for instance in aws_instance.instance :
+    "${instance.tags["Name"]}: ${instance.public_ip}"
+  ])
+}

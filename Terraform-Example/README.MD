@@ -1,3 +1,9 @@
+## Notes about these Repos:
+
+All Terraform files will reference your local public key when needed. Please store you public key as follows OR pass through a different location in the variable files
+```bash
+~/.ssh/id_rsa.pub
+```
 ## How To Install Terraform on Ubuntu Server
 
 [Terraform-Website]("https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli")
@@ -52,3 +58,4 @@ terraform destroy -var-file="secrets.tfvars"
 ```
 
 ### This is a working section will add more commands as I need ( Or as I forget them!)
+
