@@ -4,6 +4,9 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="nB9d0wqcZvRnWRLaF0_K-48" value="" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=#FFB570;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="10" width="1230" height="660" as="geometry" />
+        </mxCell>
         <mxCell id="nB9d0wqcZvRnWRLaF0_K-1" value="Calgary" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=left;html=1;shape=mxgraph.aws3.virtual_private_cloud;fillColor=#F58534;gradientColor=none;" vertex="1" parent="1">
           <mxGeometry x="40" y="40" width="79.5" height="54" as="geometry" />
         </mxCell>
