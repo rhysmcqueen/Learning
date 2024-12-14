@@ -49,6 +49,7 @@ resource "aws_instance" "instance" {
   key_name            = aws_key_pair.keypair.key_name
   user_data = templatefile("startup_script.sh", {
   tailscale_auth_key = var.tailscale_auth_key
+  PRIVATE_IP = ""
 })
 
   tags = {
