@@ -1,14 +1,36 @@
 #!/bin/bash
+
+#MetaData
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+AMI_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/ami-id)
+INSTANCE_TYPE=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-type)
+AZ=$(curl -H "X-aws-ec2-metadata-token: $TOKEN"  http://169.254.169.254/latest/meta-data/placement/availability-zone)
+MAC=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/mac)
+
+SUBNET_IPV4_CIDR_BLOCK=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/network/interfaces/macs/$MAC/subnet-ipv4-cidr-block)
+
 sudo yum update -y
-sudo yum install -y nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
+sudo yum install -y httpd
+sudo systemctl start httpd
+sudo systemctl enable httpd
+#Edit the Apache
+cat <<EOF > /var/www/html/index.html
+<html>
+<head>
+    <title>EC2 Instance Metadata</title>
+</head>
+<body>
+    <h1>EC2 Instance Metadata</h1>
+    <p>Instance ID: $INSTANCE_ID</p>
+    <p>AMI ID: $AMI_ID</p>
+    <p>Instance Type: $INSTANCE_TYPE</p>
+    <p>Instance AZ: $AZ</p>
+    <p>Instance PRivate Subnet: $SUBNET_IPV4_CIDR_BLOCK</p>
+</body>
+</html>
+EOF
 
-
-# Get Private IP BLock
-# PRIVATE_IP_CIDR=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}/\d+')
-# PRIVATE_IP=$(echo $PRIVATE_IP_CIDR | cut -d/ -f1)
-# PRIVATE_IP_32="${PRIVATE_IP}/32"
 #Tailscale
 
 
@@ -20,4 +42,4 @@ echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
 
 
-sudo tailscale up --auth-key=${tailscale_auth_key} # --advertise-routes=$PRIVATE_IP_32
+sudo tailscale up --auth-key=${tailscale_auth_key} --advertise-routes=$SUBNET_IPV4_CIDR_BLOCK

@@ -1,8 +1,32 @@
 #!/bin/bash
+
+#Metadata
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+AMI_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/ami-id)
+INSTANCE_TYPE=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-type)
+AZ=$(curl -H "X-aws-ec2-metadata-token: $TOKEN"  http://169.254.169.254/latest/meta-data/placement/availability-zone)
+
+
 sudo yum update -y
-sudo yum install -y nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
+sudo yum install -y httpd
+sudo systemctl start httpd
+sudo systemctl enable httpd
+#Edit the Apache
+cat <<EOF > /var/www/html/index.html
+<html>
+<head>
+    <title>EC2 Instance Metadata</title>
+</head>
+<body>
+    <h1>EC2 Instance Metadata</h1>
+    <p>Instance ID: $INSTANCE_ID</p>
+    <p>AMI ID: $AMI_ID</p>
+    <p>Instance Type: $AZ</p>
+    <p>Instance Type: $INSTANCE_TYPE</p>
+</body>
+</html>
+EOF
 
 # Set Private Subnet CIDR
 PRIVATE_SUBNET_CIDR="${private_subnet_cidr}"
