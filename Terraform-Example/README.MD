@@ -19,7 +19,7 @@ export tailnet_id="CHANGEME"
 
 ## How To Install Terraform on Ubuntu Server
 
-[Terraform-Website]("https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli")
+[Terraform-Website](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
 
 Update and Install Dependencies
 ```bash
