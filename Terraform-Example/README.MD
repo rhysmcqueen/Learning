@@ -4,6 +4,19 @@ All Terraform files will reference your local public key when needed. Please sto
 ```bash
 ~/.ssh/id_rsa.pub
 ```
+You can also export all you secrets or just reference the secrets file in each command:
+AWS Secrets Needed:
+```bash
+export aws_access_key_id="CHANGEME"
+export aws_secret_access_key="CHANGEME"
+```
+Tailscale Secrets Needed:
+```bash
+export tailscale_api_key="CHANGEME"
+export tailnet="CHANGEME"
+export tailnet_id="CHANGEME"
+```
+
 ## How To Install Terraform on Ubuntu Server
 
 [Terraform-Website]("https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli")
