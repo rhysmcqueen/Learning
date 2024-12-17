@@ -110,6 +110,12 @@ resource "aws_security_group" "sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Allows SSH from the internet (Optional: Restrict based on IP)
   }
+    ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Allows SSH from the internet (Optional: Restrict based on IP)
+  }
 
   tags = {
     Name = "${var.city_names[count.index]}-sg"
@@ -146,10 +152,12 @@ resource "aws_instance" "instance" {
 output "instance_names_and_ips" {
   description = "Names and public IPs of the EC2 instances"
   value = join("\n", [
-    for instance in aws_instance.instance :
-    "${instance.tags["Name"]}: ${instance.public_ip}"
+    "Calgary-instance: 40.176.84.253",
+    "Toronto-instance: 40.177.108.31",
+    "Vancouver-instance: 40.176.122.242"
   ])
 }
+
 # resource "null_resource" "delay_after_output" {
 #   provisioner "local-exec" {
 #     command = "sleep 120" # 2-minute delay
@@ -157,10 +165,11 @@ output "instance_names_and_ips" {
 # }
 
 data "tailscale_device" "sample_device" {
- depends_on = [ null_resource.delay_after_output ]
+# depends_on = [ null_resource.delay_after_output ]
+depends_on = [ aws_instance.instance ]
  count = var.num_of_cities
  name = "${lower(var.city_names[count.index])}-instance.${var.tailnet_id}"
- wait_for = "30s" 
+ wait_for = "500s" 
 }
 
 resource "tailscale_device_subnet_routes" "sample_routes" {
