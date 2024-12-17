@@ -1,6 +1,6 @@
 # Overview
 
-![Diagram](Diagrams/Multi_VPC_Diagram.drawio.png)
+![Diagram](Diagrams/Multi_VPC_Diagram-tailscale.png)
 This Terraform configuration creates multiple VPCs, each containing one EC2 instance with a public IP. The setup includes:
 
 - VPCs: One for each city specified in var.city_names.
@@ -9,6 +9,7 @@ This Terraform configuration creates multiple VPCs, each containing one EC2 inst
 - Security Groups: Configured with SSH access.
 - Key Pair: Generated for secure SSH access.
 - EC2 Instances: Deployed in each VPC with a public IP.
+- Installed Tailscale and Connect it to the tailnet with a generated AUTH key
 ## Configuration Files
 1. **Main Terraform File (main.tf):** Contains all resources and configurations.
 2. **Secrets File (secrets.tfvars):** AWS Access Key and Secret Access Key.
