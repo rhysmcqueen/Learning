@@ -150,26 +150,27 @@ output "instance_names_and_ips" {
     "${instance.tags["Name"]}: ${instance.public_ip}"
   ])
 }
-resource "null_resource" "delay_after_output" {
-  provisioner "local-exec" {
-    command = "sleep 120" # 2-minute delay
-  }
+# resource "null_resource" "delay_after_output" {
+#   provisioner "local-exec" {
+#     command = "sleep 120" # 2-minute delay
+#   }
+# }
+
+data "tailscale_device" "sample_device" {
+ depends_on = [ null_resource.delay_after_output ]
+ count = var.num_of_cities
+ name = "${lower(var.city_names[count.index])}-instance.${var.tailnet_id}"
+ wait_for = "30s" 
 }
 
-# data "tailscale_device" "sample_device" {
-#  depends_on = [ null_resource.delay_after_output ]
-#  count = var.num_of_cities
-#  name = "${lower(var.city_names[count.index])}-instance.${var.tailnet_id}"
-# }
-
-# resource "tailscale_device_subnet_routes" "sample_routes" {
-#  depends_on = [ data.tailscale_device.sample_device ]
-#  count = var.num_of_cities
-#  device_id = data.tailscale_device.sample_device[count.index].id
-#  routes = [
-#    aws_subnet.subnet[count.index].cidr_block,
-#  ]
-# }
+resource "tailscale_device_subnet_routes" "sample_routes" {
+ depends_on = [ data.tailscale_device.sample_device ]
+ count = var.num_of_cities
+ device_id = data.tailscale_device.sample_device[count.index].id
+ routes = [
+   aws_subnet.subnet[count.index].cidr_block,
+ ]
+}
 
 # output "tailscale_routes" {
 #   description = "Routes for each Tailscale device subnet route"

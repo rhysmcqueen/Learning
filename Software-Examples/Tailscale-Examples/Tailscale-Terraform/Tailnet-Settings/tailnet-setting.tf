@@ -1,5 +1,6 @@
 variable "tailscale_api_key" {}
 variable "tailnet" {}
+variable "discord_webhook" {}
 
 terraform {
   required_providers {
@@ -24,4 +25,24 @@ resource "tailscale_tailnet_settings" "sample_tailnet_settings" {
   posture_identity_collection_on              = true
   # network_flow_logging_on                     = true    # NEED PREMIUM/PAID PLAN
   # regional_routing_on                         = true    # NEED PREMIUM/PAID PLAN
+}
+
+resource "tailscale_contacts" "sample_contacts" {
+  account {
+    email = "learn.mcqueenlab@gmail.com"
+  }
+
+  support {
+    email = "learn.mcqueenlab@gmail.com"
+  }
+
+  security {
+    email = "learn.mcqueenlab@gmail.com"
+  }
+}
+
+resource "tailscale_webhook" "discord_webhook" {
+  endpoint_url  = var.discord_webhook
+  provider_type = "discord"
+  subscriptions = ["nodeCreated", "userDeleted", "nodeNeedsApproval", "userNeedsApproval", "subnetIPForwardingNotEnabled"]
 }
