@@ -40,4 +40,3 @@ echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
 
 sudo tailscale up --auth-key=${tailscale_auth_key} --advertise-routes=${private_subnet_cidr} --hostname=${tailscale_name}
-+
