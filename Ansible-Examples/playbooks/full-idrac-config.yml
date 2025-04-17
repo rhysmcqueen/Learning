@@ -1,0 +1,63 @@
+---
+- name: Full iDRAC Configuration via SSH
+  hosts: idrac_nodes
+  gather_facts: no
+  vars:
+    new_root_pass: "Password123!"
+    snmp_community: "public"
+    snmp_trap_receiver: "10.0.1.10"
+    idrac_dns_name: "{{ inventory_hostname }}"
+    ntp_server: "pool.ntp.org"
+
+  tasks:
+
+  - name: Change iDRAC root password
+    ansible.builtin.shell: racadm set iDRAC.Users.2.Password {{ new_root_pass }}
+    vars:
+      ansible_ssh_user: root
+      ansible_ssh_pass: calvin  # Default, change if needed
+
+  - name: Set iDRAC DNS Name (Hostname)
+    ansible.builtin.shell: racadm set iDRAC.NIC.DNSRacName {{ idrac_dns_name }}
+    vars:
+      ansible_ssh_user: root
+      ansible_ssh_pass: "{{ new_root_pass }}"
+
+  - name: Set next boot to PXE
+    ansible.builtin.shell: |
+      racadm set BIOS.BiosBootSettings.BootSeqDev NIC.Integrated.1-1-1
+      racadm jobqueue create BIOS.Setup.1-1
+    vars:
+      ansible_ssh_user: root
+      ansible_ssh_pass: "{{ new_root_pass }}"
+
+  - name: Enable SNMP v2 alerts on public
+    ansible.builtin.shell: |
+      racadm set iDRAC.SNMPAgent.Enable 1
+      racadm set iDRAC.SNMPAgent.CommunityName.1 {{ snmp_community }}
+      racadm set iDRAC.SNMPAgent.AlertEnable 1
+      racadm set iDRAC.SNMPAgent.TrapDestination.1 {{ snmp_trap_receiver }}
+    vars:
+      ansible_ssh_user: root
+      ansible_ssh_pass: "{{ new_root_pass }}"
+
+  - name: Enable IPMI over LAN
+    ansible.builtin.shell: racadm set iDRAC.IPMILan.Enable 1
+    vars:
+      ansible_ssh_user: root
+      ansible_ssh_pass: "{{ new_root_pass }}"
+
+  - name: Enable SSH on iDRAC
+    ansible.builtin.shell: racadm set iDRAC.SSH.Enable 1
+    vars:
+      ansible_ssh_user: root
+      ansible_ssh_pass: "{{ new_root_pass }}"
+
+  - name: Set NTP server
+    ansible.builtin.shell: |
+      racadm set iDRAC.NTPConfigGroup.NTP1 {{ ntp_server }}
+      racadm set iDRAC.NTPConfigGroup.NTPEnable 1
+      racadm jobqueue create TIME.Ntp.1-1
+    vars:
+      ansible_ssh_user: root
+      ansible_ssh_pass: "{{ new_root_pass }}"

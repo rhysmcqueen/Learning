@@ -1,0 +1,28 @@
+---
+- name: Reboot servers that need it
+  hosts: ubuntu_servers
+  become: yes
+  tasks:
+    - name: Check if reboot is required
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Reboot system if required
+      reboot:
+        msg: "Rebooting system due to updates requiring restart"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+      when: reboot_required.stat.exists
+
+    - name: Report systems that were rebooted
+      debug:
+        msg: "{{ inventory_hostname }} was rebooted"
+      when: reboot_required.stat.exists
+
+    - name: Report systems that did not need a reboot
+      debug:
+        msg: "{{ inventory_hostname }} did not need a reboot"
+      when: not reboot_required.stat.exists 

@@ -1,0 +1,49 @@
+---
+- name: Install and configure Netdata
+  hosts: proxmox:ubuntu_servers
+  become: true
+  vars:
+    netdata_parent_ip: "10.0.1.25"
+    netdata_parent_port: "19999"
+    netdata_api_key: "5f2ace50-c6f3-493f-8cb4-ff3a51bc6f15"
+    
+  tasks:
+    - name: Download Netdata kickstart script
+      get_url:
+        url: https://get.netdata.cloud/kickstart.sh
+        dest: /tmp/netdata-kickstart.sh
+        mode: '0755'
+
+    - name: Install Netdata
+      shell: 
+        cmd: sh /tmp/netdata-kickstart.sh --non-interactive
+        creates: /usr/sbin/netdata
+
+    - name: Configure Netdata streaming
+      copy:
+        dest: /etc/netdata/stream.conf
+        content: |
+          [stream]
+          enabled = yes
+          destination = {{ netdata_parent_ip }}:{{ netdata_parent_port }}
+          api key = {{ netdata_api_key }}
+
+    - name: Restart Netdata service
+      service:
+        name: netdata
+        state: restarted
+        enabled: yes
+
+    - name: Check if reboot is required
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Reboot if required
+      reboot:
+        msg: "Rebooting to complete Netdata setup"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+      when: reboot_required.stat.exists 

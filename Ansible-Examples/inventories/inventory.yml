@@ -1,0 +1,84 @@
+all:
+  children:
+    proxmox:
+      hosts:
+        pve-1.cal: 
+          ansible_host: 10.0.1.10
+          ansible_user: root
+        pve-2.cal: 
+          ansible_host: 10.0.1.11
+          ansible_user: root
+        pve-3.cal: 
+          ansible_host: 10.0.1.12
+          ansible_user: root
+        pbs.cal:
+          ansible_host: 10.0.1.13
+          ansible_user: root
+
+    node-exporter-monitored:
+      hosts:
+        automation-1.cal:
+          ansible_host: 10.0.1.25
+        dev-desktop.cal:
+          ansible_host: 10.0.1.82
+        vm-1.cal:
+          ansible_host: 10.0.1.21
+        vm-2.cal:
+          ansible_host: 10.0.1.22
+        gameserver-01.cal:
+          ansible_host: 10.0.1.23
+        terra-test-1.cal:
+          ansible_host: 10.0.1.227
+
+    ubuntu_servers:
+      hosts:
+        automation-1.cal:
+          ansible_host: 10.0.1.25
+        dev-desktop.cal:
+          ansible_host: 10.0.1.82
+        vm-1.cal:
+          ansible_host: 10.0.1.21
+        vm-2.cal:
+          ansible_host: 10.0.1.22
+        gameserver-01.cal:
+          ansible_host: 10.0.1.23
+        terra-test-1.cal:
+          ansible_host: 10.0.1.227
+
+    docker_hosts:
+      children:
+        ubuntu_servers:
+          hosts:
+            automation-1.cal:
+            vm-1.cal:
+            vm-2.cal:
+            gameserver-01.cal:
+
+    pfsense:
+      hosts:
+        10.0.1.1:
+
+    idrac:
+      hosts:
+        r630-1:
+          ansible_host: 10.0.1.90
+        r630-2:
+          ansible_host: 10.0.1.91
+        r730xd:
+          ansible_host: 10.0.1.92
+
+    truenas:
+      hosts:
+        10.0.1.5:
+
+    network_switches:
+      hosts:
+        juniper-ex3400:
+          ansible_host: 10.0.1.253
+        juniper-ex4300:
+          ansible_host: 10.0.1.254
+
+  vars:
+    ansible_user: serveradmin  # Set your SSH username
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa  # Adjust if needed
+    ansible_connection: ssh

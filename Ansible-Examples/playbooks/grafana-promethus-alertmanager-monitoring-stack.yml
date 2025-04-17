@@ -1,0 +1,135 @@
+---
+- name: Configure Prometheus, Alertmanager, and Grafana Docker containers
+  hosts: automation1.cal
+  become: true
+  tasks:
+    - name: Check if Docker is installed
+      command: docker --version
+      register: docker_check
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Fail if Docker is not installed
+      fail:
+        msg: "Docker is not installed. Please install Docker first."
+      when: docker_check.rc != 0
+
+    - name: Create monitoring directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      with_items:
+        - /opt/prometheus
+        - /opt/prometheus/data
+        - /opt/prometheus/config
+        - /opt/alertmanager
+        - /opt/alertmanager/data
+        - /opt/alertmanager/config
+        - /opt/grafana
+        - /opt/grafana/data
+        - /opt/grafana/provisioning
+
+    - name: Create initial Prometheus configuration
+      copy:
+        dest: /opt/prometheus/config/prometheus.yml
+        content: |
+          global:
+            scrape_interval: 15s
+            evaluation_interval: 15s
+
+          scrape_configs:
+            - job_name: 'prometheus'
+              static_configs:
+                - targets: ['localhost:9090']
+            - job_name: 'alertmanager'
+              static_configs:
+                - targets: ['localhost:9093']
+
+          alerting:
+            alertmanagers:
+              - static_configs:
+                  - targets:
+                    - 'alertmanager:9093'
+
+          rule_files:
+            - "alert_rules.yml"
+
+    - name: Create Alertmanager configuration
+      copy:
+        dest: /opt/alertmanager/config/alertmanager.yml
+        content: |
+          global:
+            resolve_timeout: 5m
+
+          route:
+            group_by: ['alertname']
+            group_wait: 30s
+            group_interval: 5m
+            repeat_interval: 4h
+            receiver: 'discord'
+
+          receivers:
+            - name: 'discord'
+              webhook_configs:
+                - url: '{{ discord_webhook_url }}'
+                  send_resolved: true
+
+    - name: Create basic alert rules
+      copy:
+        dest: /opt/prometheus/config/alert_rules.yml
+        content: |
+          groups:
+            - name: example
+              rules:
+                - alert: InstanceDown
+                  expr: up == 0
+                  for: 1m
+                  labels:
+                    severity: critical
+                  annotations:
+                    summary: "Instance {{ $labels.instance }} down"
+                    description: "{{ $labels.instance }} has been down for more than 1 minute."
+
+    - name: Start Alertmanager container
+      docker_container:
+        name: alertmanager
+        image: prom/alertmanager:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "9093:9093"
+        volumes:
+          - /opt/alertmanager/config:/etc/alertmanager
+          - /opt/alertmanager/data:/alertmanager
+        command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager
+
+    - name: Start Prometheus container
+      docker_container:
+        name: prometheus
+        image: prom/prometheus:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "9090:9090"
+        volumes:
+          - /opt/prometheus/config:/etc/prometheus
+          - /opt/prometheus/data:/prometheus
+        command: --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus
+        links:
+          - alertmanager:alertmanager
+
+    - name: Start Grafana container
+      docker_container:
+        name: grafana
+        image: grafana/grafana:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "3000:3000"
+        volumes:
+          - /opt/grafana/data:/var/lib/grafana
+          - /opt/grafana/provisioning:/etc/grafana/provisioning
+        environment:
+          - GF_SECURITY_ADMIN_PASSWORD=admin
+          - GF_USERS_ALLOW_SIGN_UP=false 

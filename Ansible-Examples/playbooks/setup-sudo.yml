@@ -1,0 +1,32 @@
+---
+- name: Configure passwordless sudo
+  hosts: ubuntu_servers
+  become: yes
+  vars:
+    sudo_user: "{{ ansible_user }}"  # This will use the connecting user by default
+    
+  tasks:
+    - name: Ensure sudo is installed
+      apt:
+        name: sudo
+        state: present
+        update_cache: yes
+
+    - name: Create sudoers.d directory if it doesn't exist
+      file:
+        path: /etc/sudoers.d
+        state: directory
+        mode: '0755'
+
+    - name: Add user to sudo group
+      user:
+        name: "{{ sudo_user }}"
+        groups: sudo
+        append: yes
+
+    - name: Set up passwordless sudo for user
+      copy:
+        dest: "/etc/sudoers.d/{{ sudo_user }}"
+        content: "{{ sudo_user }} ALL=(ALL) NOPASSWD:ALL"
+        mode: '0440'
+        validate: 'visudo -cf %s' 

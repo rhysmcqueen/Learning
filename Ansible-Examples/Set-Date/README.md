@@ -1,1 +1,0 @@
-This will set the date/time server for ubuntu hosts. 

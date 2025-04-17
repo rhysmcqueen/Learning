@@ -1,0 +1,59 @@
+---
+  - name: Install essential packages
+    hosts: ubuntu_servers
+    become: true
+    vars:
+      essential_packages:
+        # System utilities
+        - qemu-guest-agent
+        #- htop
+        #- iotop
+        #- net-tools
+        #- nmap
+        #- wget
+        #- curl
+        #- vim
+        #- tmux
+        #- screen
+        #- git
+        #- unzip
+        #- zip
+        # System monitoring
+        #- ncdu
+        #- iftop
+        #- sysstat
+        # Network tools
+        #- netcat
+        #- tcpdump
+        #- mtr
+        #- traceroute
+        #- iputils-ping
+        # Security
+        #- fail2ban
+        #- ufw
+        # Performance tools
+        #- stress
+        #- iperf3
+        
+    tasks:
+      - name: Update apt cache
+        apt:
+          update_cache: yes
+          cache_valid_time: 3600
+  
+      - name: Install essential packages
+        apt:
+          name: "{{ essential_packages }}"
+          state: present
+          install_recommends: yes
+  
+      - name: Enable UFW
+        ufw:
+          state: enabled
+          policy: deny
+  
+      - name: Allow SSH through UFW
+        ufw:
+          rule: allow
+          port: ssh
+          proto: tcp 

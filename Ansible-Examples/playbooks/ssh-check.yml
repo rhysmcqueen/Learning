@@ -1,0 +1,40 @@
+---
+- name: SSH Connectivity Troubleshooting
+  hosts: proxmox:ubuntu_servers
+  gather_facts: no
+  tasks:
+
+    - name: Check SSH Connection (Ping)
+      ping:
+      register: ping_result
+      ignore_errors: yes
+
+    - name: Display Ping Results
+      debug:
+        msg: "Ping successful: {{ ping_result.ping }}"
+      when: ping_result is succeeded
+
+    - name: Run a Simple Command to Verify SSH Execution
+      command: whoami
+      register: ssh_output
+      ignore_errors: yes
+
+    - name: Display SSH Command Output
+      debug:
+        msg: "Connected as {{ ssh_output.stdout }}"
+      when: ssh_output is succeeded
+
+    - name: Identify Hosts That Require Password Authentication
+      debug:
+        msg: "SSH password authentication might be required!"
+      when: ssh_output is failed and "'Permission denied' in ssh_output.stderr"
+
+    - name: Suggest Fixes for Unreachable Hosts
+      debug:
+        msg: "Check if SSH keys are missing. Run 'ssh-copy-id {{ inventory_hostname }}'"
+      when: ssh_output is failed
+
+    - name: Report Unreachable Hosts
+      debug:
+        msg: "Host {{ inventory_hostname }} is unreachable. Check firewall, SSH service, or network issues."
+      when: ping_result is failed

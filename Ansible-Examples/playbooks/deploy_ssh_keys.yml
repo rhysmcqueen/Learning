@@ -1,0 +1,44 @@
+---
+- name: Deploy SSH Keys to Remote Hosts
+  hosts: proxmox # :ubuntu_servers
+  gather_facts: no
+  vars:
+    ansible_ssh_user: "serveradmin"
+
+  tasks:
+
+    - name: Ensure local SSH key exists
+      delegate_to: localhost
+      command: test -f ~/.ssh/id_rsa.pub
+      register: ssh_key_exists
+      failed_when: ssh_key_exists.rc != 0
+      changed_when: false
+
+    - name: Read public SSH key
+      delegate_to: localhost
+      slurp:
+        src: ~/.ssh/id_rsa.pub
+      register: ssh_public_key
+
+    - name: Ensure .ssh directory exists on remote host
+      file:
+        path: ~/.ssh
+        state: directory
+        mode: '0700'
+
+    - name: Copy SSH key to remote authorized_keys
+      lineinfile:
+        path: ~/.ssh/authorized_keys
+        line: "{{ ssh_public_key['content'] | b64decode }}"
+        create: yes
+        mode: '0600'
+
+    - name: Ensure correct permissions on .ssh and authorized_keys
+      file:
+        path: "{{ item }}"
+        mode: '0600'
+      with_items:
+        - ~/.ssh/authorized_keys
+
+    - name: Test SSH Connectivity Without Password
+      ping:

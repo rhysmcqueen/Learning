@@ -1,0 +1,7 @@
+---
+- name: Update all Linux hosts
+  hosts: ubuntu_servers
+  become: yes
+  roles:
+    - ../roles/update-hosts
+    
